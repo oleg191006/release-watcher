@@ -1,4 +1,4 @@
-const logger = require('../utils/logger');
+const logger = require('@/utils/logger');
 
 function errorHandler(err, _req, res, _next) {
     logger.error('Unhandled error', err);
