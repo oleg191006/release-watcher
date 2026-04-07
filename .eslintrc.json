@@ -24,7 +24,7 @@
         "avoidEscape": true
       }
     ],
-    "indent": ["error", 2],
+    "indent": ["error", 4],
     "comma-dangle": ["error", "always-multiline"],
     "eqeqeq": ["error", "always"],
     "no-var": "error",

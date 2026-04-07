@@ -8,7 +8,8 @@
     "dev": "nodemon src/server.js",
     "lint": "eslint src/ tests/",
     "lint:fix": "eslint src/ tests/ --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:unit": "jest --runInBand",
+    "test": "jest --coverage --forceExit --detectOpenHandles"
   },
   "keywords": [],
   "author": "",
