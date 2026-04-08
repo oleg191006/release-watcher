@@ -1,3 +1,4 @@
+const axios = require('axios');
 const nodemailer = require('nodemailer');
 const config = require('@/config');
 const logger = require('@/utils/logger');
@@ -31,6 +32,49 @@ function setTransporter(t) {
     transporter = t;
 }
 
+function getErrorDetails(err) {
+    if (err && err.response) {
+        return {
+            status: err.response.status,
+            data: err.response.data,
+        };
+    }
+
+    return {
+        message: err && err.message ? err.message : String(err),
+    };
+}
+
+async function sendWithResend(mailOptions) {
+    if (!config.resend.apiKey) {
+        return false;
+    }
+
+    try {
+        await axios.post(
+            'https://api.resend.com/emails',
+            {
+                from: config.resend.from,
+                to: [mailOptions.to],
+                subject: mailOptions.subject,
+                html: mailOptions.html,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${config.resend.apiKey}`,
+                    'Content-Type': 'application/json',
+                },
+                timeout: config.resend.timeoutMs,
+            },
+        );
+
+        return true;
+    } catch (err) {
+        logger.warn('Failed to send email via Resend API. Falling back to SMTP transport.', getErrorDetails(err));
+        return false;
+    }
+}
+
 async function sendConfirmationEmail(email, repo, confirmToken, unsubscribeToken) {
     const confirmUrl = `${config.appUrl}/api/confirm/${confirmToken}`;
     const unsubscribeUrl = `${config.appUrl}/api/unsubscribe/${unsubscribeToken}`;
@@ -51,7 +95,12 @@ async function sendConfirmationEmail(email, repo, confirmToken, unsubscribeToken
     };
 
     try {
-        await getTransporter().sendMail(mailOptions);
+        const sentViaResend = await sendWithResend(mailOptions);
+
+        if (!sentViaResend) {
+            await getTransporter().sendMail(mailOptions);
+        }
+
         logger.info(`Confirmation email sent to ${email} for repo ${repo}`);
     } catch (err) {
         logger.error(`Failed to send confirmation email to ${email}`, err);
@@ -80,7 +129,12 @@ async function sendReleaseNotification(email, repo, release, unsubscribeToken) {
     };
 
     try {
-        await getTransporter().sendMail(mailOptions);
+        const sentViaResend = await sendWithResend(mailOptions);
+
+        if (!sentViaResend) {
+            await getTransporter().sendMail(mailOptions);
+        }
+
         logger.info(`Release notification sent to ${email} for ${repo}@${release.tag}`);
     } catch (err) {
         logger.error(`Failed to send release notification to ${email}`, err);

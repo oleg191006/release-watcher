@@ -40,6 +40,7 @@ const config = {
     resend: {
         apiKey: process.env.RESEND_API_KEY || '',
         from: process.env.RESEND_FROM || process.env.EMAIL_FROM || 'GitHub Notificator <noreply@notificator.app>',
+        timeoutMs: parseInt(process.env.RESEND_TIMEOUT_MS, 10) || 10000,
     },
 
     scanner: {
