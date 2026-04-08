@@ -6,47 +6,29 @@ const config = require('@/config');
 const { validateEmail, validateRepo, validateToken } = require('@/validators/subscription');
 const logger = require('@/utils/logger');
 
+function createError(message, statusCode) {
+    const err = new Error(message);
+    err.statusCode = statusCode;
+    err.expose = true;
+    return err;
+}
+
+function assertValid(check) {
+    if (!check.valid) throw createError(check.error, 400);
+}
+
 async function subscribe(email, repo) {
-
-    const emailCheck = validateEmail(email);
-
-    if (!emailCheck.valid) {
-        const err = new Error(emailCheck.error);
-        err.statusCode = 400;
-        err.expose = true;
-        throw err;
-    }
-
-    const repoCheck = validateRepo(repo);
-
-    if (!repoCheck.valid) {
-        const err = new Error(repoCheck.error);
-        err.statusCode = 400;
-        err.expose = true;
-        throw err;
-    }
+    assertValid(validateEmail(email));
+    assertValid(validateRepo(repo));
 
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedRepo = repo.trim();
 
     const existing = await subscriptionRepo.findByEmailAndRepo(normalizedEmail, normalizedRepo);
-
-    if (existing) {
-        const err = new Error('Email already subscribed to this repository');
-        err.statusCode = 409;
-        err.expose = true;
-        throw err;
-    }
-
+    if (existing) throw createError('Email already subscribed to this repository', 409);
 
     const repoExists = await githubService.checkRepoExists(normalizedRepo);
-
-    if (!repoExists) {
-        const err = new Error('Repository not found on GitHub');
-        err.statusCode = 404;
-        err.expose = true;
-        throw err;
-    }
+    if (!repoExists) throw createError('Repository not found on GitHub', 404);
 
     const latestRelease = await githubService.getLatestRelease(normalizedRepo);
     const lastSeenTag = latestRelease ? latestRelease.tag : null;
@@ -76,75 +58,38 @@ async function subscribe(email, repo) {
             ? 'Failed to send confirmation email. Please try again later.'
             : 'Email service is not configured on server. Please configure SMTP or Resend settings.';
 
-        const emailError = new Error(message);
-        emailError.statusCode = 503;
-        emailError.expose = true;
-        throw emailError;
+        throw createError(message, 503);
     }
 
     return { message: 'Subscription successful. Confirmation email sent.' };
 }
 
 async function confirmSubscription(token) {
-    const tokenCheck = validateToken(token);
-
-    if (!tokenCheck.valid) {
-        const err = new Error(tokenCheck.error);
-        err.statusCode = 400;
-        err.expose = true;
-        throw err;
-    }
+    assertValid(validateToken(token));
 
     const subscription = await subscriptionRepo.findByConfirmToken(token);
-
-    if (!subscription) {
-        const err = new Error('Token not found');
-        err.statusCode = 404;
-        err.expose = true;
-        throw err;
-    }
+    if (!subscription) throw createError('Token not found', 404);
 
     if (subscription.confirmed) {
         return { message: 'Subscription already confirmed' };
     }
 
     await subscriptionRepo.confirm(subscription.id);
-
     return { message: 'Subscription confirmed successfully' };
 }
 
 async function unsubscribe(token) {
-    const tokenCheck = validateToken(token);
-
-    if (!tokenCheck.valid) {
-        const err = new Error(tokenCheck.error);
-        err.statusCode = 400;
-        err.expose = true;
-        throw err;
-    }
+    assertValid(validateToken(token));
 
     const subscription = await subscriptionRepo.findByUnsubscribeToken(token);
-
-    if (!subscription) {
-        const err = new Error('Token not found');
-        err.statusCode = 404;
-        err.expose = true;
-        throw err;
-    }
+    if (!subscription) throw createError('Token not found', 404);
 
     await subscriptionRepo.remove(subscription.id);
-
     return { message: 'Unsubscribed successfully' };
 }
 
 async function getSubscriptions(email) {
-    const emailCheck = validateEmail(email);
-    if (!emailCheck.valid) {
-        const err = new Error(emailCheck.error);
-        err.statusCode = 400;
-        err.expose = true;
-        throw err;
-    }
+    assertValid(validateEmail(email));
 
     const normalizedEmail = email.trim().toLowerCase();
     const subs = await subscriptionRepo.findAllByEmail(normalizedEmail);
