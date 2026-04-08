@@ -10,6 +10,9 @@ function getTransporter() {
             host: config.smtp.host,
             port: config.smtp.port,
             secure: config.smtp.secure,
+            connectionTimeout: config.smtp.connectionTimeoutMs,
+            greetingTimeout: config.smtp.greetingTimeoutMs,
+            socketTimeout: config.smtp.socketTimeoutMs,
             tls: {
                 rejectUnauthorized: config.smtp.rejectUnauthorized,
             },
@@ -27,8 +30,9 @@ function setTransporter(t) {
     transporter = t;
 }
 
-async function sendConfirmationEmail(email, repo, confirmToken) {
+async function sendConfirmationEmail(email, repo, confirmToken, unsubscribeToken) {
     const confirmUrl = `${config.appUrl}/api/confirm/${confirmToken}`;
+    const unsubscribeUrl = `${config.appUrl}/api/unsubscribe/${unsubscribeToken}`;
 
     const mailOptions = {
         from: config.smtp.from,
@@ -39,6 +43,8 @@ async function sendConfirmationEmail(email, repo, confirmToken) {
       <p>You have requested to receive release notifications for <strong>${repo}</strong>.</p>
       <p>Please confirm your subscription by clicking the link below:</p>
       <p><a href="${confirmUrl}">${confirmUrl}</a></p>
+            <p>If you prefer, you can unsubscribe at any time using this link:</p>
+            <p><a href="${unsubscribeUrl}">${unsubscribeUrl}</a></p>
       <p>If you did not request this, you can safely ignore this email.</p>
     `,
     };
