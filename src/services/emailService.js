@@ -10,6 +10,7 @@ function getTransporter() {
             host: config.smtp.host,
             port: config.smtp.port,
             secure: config.smtp.secure,
+            requireTLS: config.smtp.requireTLS,
             connectionTimeout: config.smtp.connectionTimeoutMs,
             greetingTimeout: config.smtp.greetingTimeoutMs,
             socketTimeout: config.smtp.socketTimeoutMs,
