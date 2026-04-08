@@ -206,6 +206,32 @@ body {
   cursor: not-allowed;
 }
 
+.btn-danger {
+  width: auto;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.8rem;
+  background: rgba(248, 81, 73, 0.15);
+  color: var(--red);
+  border: 1px solid rgba(248, 81, 73, 0.35);
+}
+
+.btn-danger:hover {
+  background: rgba(248, 81, 73, 0.25);
+}
+
+.btn-secondary {
+  width: auto;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  border-color: var(--text-muted);
+}
+
 .alert {
   padding: 0.75rem 1rem;
   border-radius: 8px;
@@ -252,6 +278,12 @@ body {
   border-radius: 8px;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
+}
+
+.sub-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .sub-item .repo {
@@ -330,4 +362,68 @@ body {
 
 .panel.active {
   display: block;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(1, 4, 9, 0.75);
+  backdrop-filter: blur(2px);
+}
+
+.modal-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 460px);
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 20px 60px rgba(1, 4, 9, 0.5);
+}
+
+.modal-dialog h3 {
+  font-size: 1rem;
+  margin-bottom: 0.45rem;
+}
+
+.modal-text {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+#unsubscribe-confirm-btn {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 520px) {
+  .modal-actions {
+    justify-content: stretch;
+  }
+
+  .modal-actions .btn {
+    flex: 1;
+    width: 100%;
+  }
 }

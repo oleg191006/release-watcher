@@ -64,6 +64,14 @@ function syncApiKeyInputs() {
 
 syncApiKeyInputs();
 
+const unsubscribeModal = createUnsubscribeModalController({
+    modal: document.getElementById('unsubscribe-modal'),
+    repoLabel: document.getElementById('unsubscribe-modal-repo'),
+    tokenInput: document.getElementById('unsubscribe-token-input'),
+    confirmButton: document.getElementById('unsubscribe-confirm-btn'),
+    cancelButton: document.getElementById('unsubscribe-cancel-btn'),
+});
+
 function renderSubscriptions(listElement, subscriptions) {
     if (!Array.isArray(subscriptions) || subscriptions.length === 0) {
         listElement.innerHTML = '<div class="empty-state">No subscriptions found 🤷</div>';
@@ -79,9 +87,14 @@ function renderSubscriptions(listElement, subscriptions) {
                             <span class="repo">${escapeHtml(sub.repo)}</span>
                             <div class="tag">${sub.last_seen_tag ? 'Last release: ' + escapeHtml(sub.last_seen_tag) : 'No releases yet'}</div>
                         </div>
-                        <span class="badge ${sub.confirmed ? 'badge-confirmed' : 'badge-pending'}">
-                            ${sub.confirmed ? '✓ Confirmed' : '⏳ Pending'}
-                        </span>
+                        <div class="sub-actions">
+                            <span class="badge ${sub.confirmed ? 'badge-confirmed' : 'badge-pending'}">
+                                ${sub.confirmed ? '✓ Confirmed' : '⏳ Pending'}
+                            </span>
+                            <button type="button" class="btn btn-danger btn-unsubscribe" data-repo="${encodeURIComponent(sub.repo)}">
+                                Unsubscribe
+                            </button>
+                        </div>
                     `;
         listElement.appendChild(item);
     });
@@ -164,8 +177,163 @@ document.getElementById('lookup-form').addEventListener('submit', async (event) 
     }
 });
 
+document.getElementById('sub-list').addEventListener('click', async (event) => {
+    const button = event.target.closest('.btn-unsubscribe');
+    if (!button) {
+        return;
+    }
+
+    const listElement = document.getElementById('sub-list');
+    const alertElement = document.getElementById('lookup-alert');
+    const email = document.getElementById('lookup-email').value.trim();
+    const repo = decodeURIComponent(button.dataset.repo || '');
+
+    if (!email || !repo) {
+        showAlert(alertElement, 'error', 'Please load subscriptions first.');
+        return;
+    }
+
+    hideAlert(alertElement);
+
+    const tokenInput = await unsubscribeModal.open(repo);
+    const token = normalizeUnsubscribeToken(tokenInput);
+    if (!token) {
+        showAlert(alertElement, 'warning', 'Unsubscribe canceled. Token is required.');
+        return;
+    }
+
+    button.disabled = true;
+    const originalText = button.textContent;
+    button.textContent = 'Removing...';
+
+    try {
+        const response = await fetch(`${API_BASE}/unsubscribe/${encodeURIComponent(token)}`, {
+            method: 'GET',
+            headers: getHeaders('lookup-api-key'),
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                showAlert(alertElement, 'error', 'Token not found. Use the unsubscribe link from your email (you can paste full URL).');
+                return;
+            }
+            showAlert(alertElement, 'error', data.error || `Error: ${response.status}`);
+            return;
+        }
+
+        showAlert(alertElement, 'success', data.message || 'Unsubscribed successfully.');
+        const refreshResponse = await fetch(`${API_BASE}/subscriptions?email=${encodeURIComponent(email)}`, {
+            headers: getHeaders('lookup-api-key'),
+        });
+        const refreshed = await refreshResponse.json().catch(() => []);
+        if (refreshResponse.ok) {
+            renderSubscriptions(listElement, refreshed);
+        }
+    } catch (_error) {
+        showAlert(alertElement, 'error', 'Failed to connect to the server.');
+    } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+    }
+});
+
 function escapeHtml(value) {
     const div = document.createElement('div');
     div.appendChild(document.createTextNode(value));
     return div.innerHTML;
+}
+
+function normalizeUnsubscribeToken(rawValue) {
+    if (!rawValue || typeof rawValue !== 'string') {
+        return '';
+    }
+
+    const trimmed = rawValue.trim();
+    if (!trimmed) {
+        return '';
+    }
+
+    if (!/^https?:\/\//i.test(trimmed)) {
+        return trimmed;
+    }
+
+    try {
+        const url = new URL(trimmed);
+        const segments = url.pathname.split('/').filter(Boolean);
+        return segments.length > 0 ? decodeURIComponent(segments[segments.length - 1]) : '';
+    } catch (_error) {
+        return trimmed;
+    }
+}
+
+function createUnsubscribeModalController(elements) {
+    const {
+        modal,
+        repoLabel,
+        tokenInput,
+        confirmButton,
+        cancelButton,
+    } = elements;
+
+    let resolver = null;
+
+    if (!modal || !repoLabel || !tokenInput || !confirmButton || !cancelButton) {
+        return {
+            open: async () => null,
+        };
+    }
+
+    const close = (value = null) => {
+        if (!resolver) {
+            return;
+        }
+
+        const nextResolve = resolver;
+        resolver = null;
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        tokenInput.value = '';
+        nextResolve(value);
+    };
+
+    confirmButton.addEventListener('click', () => {
+        const token = tokenInput.value.trim();
+        close(token || null);
+    });
+
+    cancelButton.addEventListener('click', () => close());
+
+    modal.addEventListener('click', (event) => {
+        if (event.target instanceof HTMLElement && event.target.dataset.closeModal === 'true') {
+            close();
+        }
+    });
+
+    tokenInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            confirmButton.click();
+        }
+    });
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && resolver) {
+            close();
+        }
+    });
+
+    return {
+        open: (repo) => new Promise((resolve) => {
+            if (resolver) {
+                resolver(null);
+            }
+
+            resolver = resolve;
+            repoLabel.textContent = `Repository: ${repo}`;
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+            tokenInput.focus();
+        }),
+    };
 }

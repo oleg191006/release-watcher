@@ -3,6 +3,7 @@ const subscriptionRepo = require('@/repositories/subscriptionRepository');
 const githubService = require('./githubService');
 const emailService = require('./emailService');
 const { validateEmail, validateRepo, validateToken } = require('@/validators/subscription');
+const logger = require('@/utils/logger');
 
 async function subscribe(email, repo) {
 
@@ -52,7 +53,7 @@ async function subscribe(email, repo) {
     const confirmToken = uuidv4();
     const unsubscribeToken = uuidv4();
 
-    await subscriptionRepo.create({
+    const created = await subscriptionRepo.create({
         email: normalizedEmail,
         repo: normalizedRepo,
         confirmToken,
@@ -60,7 +61,20 @@ async function subscribe(email, repo) {
         lastSeenTag,
     });
 
-    await emailService.sendConfirmationEmail(normalizedEmail, normalizedRepo, confirmToken);
+    try {
+        await emailService.sendConfirmationEmail(normalizedEmail, normalizedRepo, confirmToken, unsubscribeToken);
+    } catch (err) {
+        try {
+            await subscriptionRepo.remove(created.id);
+        } catch (rollbackErr) {
+            logger.error('Failed to rollback subscription after email send error', rollbackErr);
+        }
+
+        const emailError = new Error('Failed to send confirmation email. Please try again later.');
+        emailError.statusCode = 503;
+        emailError.expose = true;
+        throw emailError;
+    }
 
     return { message: 'Subscription successful. Confirmation email sent.' };
 }
@@ -137,4 +151,9 @@ async function getSubscriptions(email) {
     }));
 }
 
-module.exports = { subscribe, confirmSubscription, unsubscribe, getSubscriptions };
+module.exports = {
+    subscribe,
+    confirmSubscription,
+    unsubscribe,
+    getSubscriptions,
+};

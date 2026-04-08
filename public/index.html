@@ -91,6 +91,44 @@
       </p>
     </div>
 
+    <div class="modal" id="unsubscribe-modal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal="true"></div>
+      <div
+        class="modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="unsubscribe-modal-title"
+      >
+        <h3 id="unsubscribe-modal-title">Unsubscribe From Repository</h3>
+        <p class="modal-text" id="unsubscribe-modal-repo"></p>
+        <div class="form-group">
+          <label for="unsubscribe-token-input">Unsubscribe token</label>
+          <input
+            type="text"
+            id="unsubscribe-token-input"
+            placeholder="Paste token from email"
+            autocomplete="off"
+          />
+        </div>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            id="unsubscribe-cancel-btn"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            id="unsubscribe-confirm-btn"
+          >
+            Unsubscribe
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="./app.js"></script>
   </body>
 </html>
