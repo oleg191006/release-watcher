@@ -75,6 +75,13 @@ async function sendWithResend(mailOptions) {
     }
 }
 
+async function sendMail(mailOptions) {
+    const sentViaResend = await sendWithResend(mailOptions);
+    if (!sentViaResend) {
+        await getTransporter().sendMail(mailOptions);
+    }
+}
+
 async function sendConfirmationEmail(email, repo, confirmToken, unsubscribeToken) {
     const confirmUrl = `${config.appUrl}/api/confirm/${confirmToken}`;
     const unsubscribeUrl = `${config.appUrl}/api/unsubscribe/${unsubscribeToken}`;
@@ -95,12 +102,7 @@ async function sendConfirmationEmail(email, repo, confirmToken, unsubscribeToken
     };
 
     try {
-        const sentViaResend = await sendWithResend(mailOptions);
-
-        if (!sentViaResend) {
-            await getTransporter().sendMail(mailOptions);
-        }
-
+        await sendMail(mailOptions);
         logger.info(`Confirmation email sent to ${email} for repo ${repo}`);
     } catch (err) {
         logger.error(`Failed to send confirmation email to ${email}`, err);
@@ -129,12 +131,7 @@ async function sendReleaseNotification(email, repo, release, unsubscribeToken) {
     };
 
     try {
-        const sentViaResend = await sendWithResend(mailOptions);
-
-        if (!sentViaResend) {
-            await getTransporter().sendMail(mailOptions);
-        }
-
+        await sendMail(mailOptions);
         logger.info(`Release notification sent to ${email} for ${repo}@${release.tag}`);
     } catch (err) {
         logger.error(`Failed to send release notification to ${email}`, err);
