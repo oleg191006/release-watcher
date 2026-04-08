@@ -71,10 +71,10 @@ async function subscribe(email, repo) {
             logger.error('Failed to rollback subscription after email send error', rollbackErr);
         }
 
-        const smtpConfigured = Boolean(config.smtp.user && config.smtp.pass);
-        const message = smtpConfigured
+        const emailConfigured = Boolean(config.resend.apiKey || (config.smtp.user && config.smtp.pass));
+        const message = emailConfigured
             ? 'Failed to send confirmation email. Please try again later.'
-            : 'Email service is not configured on server. Please configure SMTP settings.';
+            : 'Email service is not configured on server. Please configure SMTP or Resend settings.';
 
         const emailError = new Error(message);
         emailError.statusCode = 503;

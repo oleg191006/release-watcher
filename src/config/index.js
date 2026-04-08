@@ -36,6 +36,11 @@ const config = {
         from: process.env.EMAIL_FROM || 'GitHub Notificator <noreply@notificator.app>',
     },
 
+    resend: {
+        apiKey: process.env.RESEND_API_KEY || '',
+        from: process.env.RESEND_FROM || process.env.EMAIL_FROM || 'GitHub Notificator <noreply@notificator.app>',
+    },
+
     scanner: {
         cron: process.env.SCAN_CRON || '*/10 * * * *',
     },

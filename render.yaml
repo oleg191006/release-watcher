@@ -34,16 +34,20 @@ services:
       - key: SMTP_REJECT_UNAUTHORIZED
         value: "true"
       - key: SMTP_CONNECTION_TIMEOUT_MS
-        value: "10000"
+        value: "30000"
       - key: SMTP_GREETING_TIMEOUT_MS
-        value: "10000"
+        value: "30000"
       - key: SMTP_SOCKET_TIMEOUT_MS
-        value: "15000"
+        value: "60000"
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASS
         sync: false
       - key: EMAIL_FROM
         value: "GitHub Notificator <noreply@notificator.app>"
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM
+        value: "GitHub Notificator <onboarding@resend.dev>"
       - key: SCAN_CRON
         value: "*/10 * * * *"
