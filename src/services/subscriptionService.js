@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const subscriptionRepo = require('@/repositories/subscriptionRepository');
 const githubService = require('./githubService');
 const emailService = require('./emailService');
+const config = require('@/config');
 const { validateEmail, validateRepo, validateToken } = require('@/validators/subscription');
 const logger = require('@/utils/logger');
 
@@ -70,7 +71,12 @@ async function subscribe(email, repo) {
             logger.error('Failed to rollback subscription after email send error', rollbackErr);
         }
 
-        const emailError = new Error('Failed to send confirmation email. Please try again later.');
+        const smtpConfigured = Boolean(config.smtp.user && config.smtp.pass);
+        const message = smtpConfigured
+            ? 'Failed to send confirmation email. Please try again later.'
+            : 'Email service is not configured on server. Please configure SMTP settings.';
+
+        const emailError = new Error(message);
         emailError.statusCode = 503;
         emailError.expose = true;
         throw emailError;

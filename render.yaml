@@ -20,7 +20,7 @@ services:
           name: notificator-db
           property: connectionString
       - key: APP_URL
-        value: https://notificator.onrender.com
+        sync: false
       - key: API_KEY
         sync: false
       - key: GITHUB_TOKEN
