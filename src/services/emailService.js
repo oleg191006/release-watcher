@@ -84,7 +84,6 @@ async function sendMail(mailOptions) {
 
 async function sendConfirmationEmail(email, repo, confirmToken, unsubscribeToken) {
     const confirmUrl = `${config.appUrl}/api/confirm/${confirmToken}`;
-    const unsubscribeUrl = `${config.appUrl}/api/unsubscribe/${unsubscribeToken}`;
 
     const mailOptions = {
         from: config.smtp.from,
@@ -95,8 +94,8 @@ async function sendConfirmationEmail(email, repo, confirmToken, unsubscribeToken
       <p>You have requested to receive release notifications for <strong>${repo}</strong>.</p>
       <p>Please confirm your subscription by clicking the link below:</p>
       <p><a href="${confirmUrl}">${confirmUrl}</a></p>
-            <p>If you prefer, you can unsubscribe at any time using this link:</p>
-            <p><a href="${unsubscribeUrl}">${unsubscribeUrl}</a></p>
+    <p><strong>Unsubscribe token:</strong> ${unsubscribeToken}</p>
+    <p>You can paste this token in the unsubscribe form in the app.</p>
       <p>If you did not request this, you can safely ignore this email.</p>
     `,
     };
