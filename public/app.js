@@ -215,7 +215,7 @@ document.getElementById('sub-list').addEventListener('click', async (event) => {
 
         if (!response.ok) {
             if (response.status === 404) {
-                showAlert(alertElement, 'error', 'Token not found. Use the unsubscribe link from your email (you can paste full URL).');
+                showAlert(alertElement, 'error', 'Token not found. Copy the Unsubscribe token from your email and try again.');
                 return;
             }
             showAlert(alertElement, 'error', data.error || `Error: ${response.status}`);
