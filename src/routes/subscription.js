@@ -3,44 +3,29 @@ const subscriptionService = require('@/services/subscriptionService');
 
 const router = Router();
 
-router.post('/subscribe', async (req, res, next) => {
-    try {
-        const { email, repo } = req.body;
-        const result = await subscriptionService.subscribe(email, repo);
-        return res.status(200).json(result);
-    } catch (err) {
-        return next(err);
-    }
-});
+function asyncHandler(fn) {
+    return (req, res, next) => fn(req, res, next).catch(next);
+}
 
-router.get('/confirm/:token', async (req, res, next) => {
-    try {
-        const { token } = req.params;
-        const result = await subscriptionService.confirmSubscription(token);
-        return res.status(200).json(result);
-    } catch (err) {
-        return next(err);
-    }
-});
+router.post('/subscribe', asyncHandler(async (req, res) => {
+    const { email, repo } = req.body;
+    const result = await subscriptionService.subscribe(email, repo);
+    return res.status(200).json(result);
+}));
 
-router.get('/unsubscribe/:token', async (req, res, next) => {
-    try {
-        const { token } = req.params;
-        const result = await subscriptionService.unsubscribe(token);
-        return res.status(200).json(result);
-    } catch (err) {
-        return next(err);
-    }
-});
+router.get('/confirm/:token', asyncHandler(async (req, res) => {
+    const result = await subscriptionService.confirmSubscription(req.params.token);
+    return res.status(200).json(result);
+}));
 
-router.get('/subscriptions', async (req, res, next) => {
-    try {
-        const { email } = req.query;
-        const result = await subscriptionService.getSubscriptions(email);
-        return res.status(200).json(result);
-    } catch (err) {
-        return next(err);
-    }
-});
+router.get('/unsubscribe/:token', asyncHandler(async (req, res) => {
+    const result = await subscriptionService.unsubscribe(req.params.token);
+    return res.status(200).json(result);
+}));
+
+router.get('/subscriptions', asyncHandler(async (req, res) => {
+    const result = await subscriptionService.getSubscriptions(req.query.email);
+    return res.status(200).json(result);
+}));
 
 module.exports = router;
