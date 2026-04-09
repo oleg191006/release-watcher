@@ -1,11 +1,15 @@
 
 const axios = require('axios');
 const githubService = require('@/services/githubService');
+const redisCache = require('@/cache/redisCache');
 
 jest.mock('axios');
+jest.mock('@/cache/redisCache');
 
 beforeEach(() => {
     jest.spyOn(githubService, 'sleep').mockResolvedValue();
+    redisCache.getJson.mockResolvedValue(undefined);
+    redisCache.setJson.mockResolvedValue();
 });
 
 afterEach(() => {

@@ -21,6 +21,12 @@ const config = {
     github: {
         token: process.env.GITHUB_TOKEN || '',
         apiBase: 'https://api.github.com',
+        cacheTtlSeconds: parseInt(process.env.GITHUB_CACHE_TTL_SECONDS, 10) || 600,
+    },
+
+    redis: {
+        url: process.env.REDIS_URL || '',
+        connectTimeoutMs: parseInt(process.env.REDIS_CONNECT_TIMEOUT_MS, 10) || 5000,
     },
 
     smtp: {

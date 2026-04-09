@@ -5,6 +5,10 @@ databases:
     user: notificator
 
 services:
+  - type: redis
+    name: notificator-redis
+    plan: free
+
   - type: web
     name: notificator
     runtime: node
@@ -19,6 +23,15 @@ services:
         fromDatabase:
           name: notificator-db
           property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: notificator-redis
+          property: connectionString
+      - key: REDIS_CONNECT_TIMEOUT_MS
+        value: "5000"
+      - key: GITHUB_CACHE_TTL_SECONDS
+        value: "600"
       - key: APP_URL
         sync: false
       - key: API_KEY
