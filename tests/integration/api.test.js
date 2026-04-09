@@ -184,6 +184,16 @@ describe('GET /health', () => {
     });
 });
 
+describe('GET /metrics', () => {
+    it('should return 200 with Prometheus metrics payload', async () => {
+        const res = await request(app).get('/metrics');
+
+        expect(res.status).toBe(200);
+        expect(res.headers['content-type']).toContain('text/plain');
+        expect(res.text).toContain('release_watcher_process_resident_memory_bytes');
+    });
+});
+
 describe('API Key Authentication', () => {
     let protectedApp;
 
@@ -226,6 +236,12 @@ describe('API Key Authentication', () => {
 
     it('should NOT require API key for /health endpoint', async () => {
         const res = await request(protectedApp).get('/health');
+
+        expect(res.status).toBe(200);
+    });
+
+    it('should NOT require API key for /metrics endpoint', async () => {
+        const res = await request(protectedApp).get('/metrics');
 
         expect(res.status).toBe(200);
     });

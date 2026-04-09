@@ -4,6 +4,7 @@ const cors = require('cors');
 const apiKeyAuth = require('@/middleware/apiKey');
 const errorHandler = require('@/middleware/errorHandler');
 const subscriptionRoutes = require('@/routes/subscription');
+const { getMetricsPayload, getMetricsContentType } = require('@/metrics');
 
 function createApp() {
     const app = express();
@@ -20,6 +21,16 @@ function createApp() {
 
     app.get('/health', (_req, res) => {
         res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    });
+
+    app.get('/metrics', async (_req, res, next) => {
+        try {
+            const payload = await getMetricsPayload();
+            res.set('Content-Type', getMetricsContentType());
+            res.send(payload);
+        } catch (err) {
+            next(err);
+        }
     });
 
     app.use(errorHandler);
