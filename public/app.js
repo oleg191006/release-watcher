@@ -91,9 +91,11 @@ function renderSubscriptions(listElement, subscriptions) {
                             <span class="badge ${sub.confirmed ? 'badge-confirmed' : 'badge-pending'}">
                                 ${sub.confirmed ? '✓ Confirmed' : '⏳ Pending'}
                             </span>
-                            <button type="button" class="btn btn-danger btn-unsubscribe" data-repo="${encodeURIComponent(sub.repo)}">
+                            ${sub.confirmed
+        ? `<button type="button" class="btn btn-danger btn-unsubscribe" data-repo="${encodeURIComponent(sub.repo)}">
                                 Unsubscribe
-                            </button>
+                            </button>`
+        : ''}
                         </div>
                     `;
         listElement.appendChild(item);
