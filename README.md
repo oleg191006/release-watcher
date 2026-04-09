@@ -1,3 +1,9 @@
+## Demo 
+
+https://github.com/user-attachments/assets/3291d081-16f4-450a-842d-8a4633ec1944
+
+
+
 # GitHub Release Notificator
 
 A Node.js + Express service that lets users subscribe to GitHub repository releases and receive email notifications.
@@ -164,13 +170,13 @@ Migrations run automatically on startup in `src/server.js`.
 
 Open:
 
-- `http://localhost:3000`
+`http://localhost:3000`
 
 ### Postman
 
 Import collection:
 
-- `postman/GitHub_Release_Notificator.postman_collection.json`
+`postman/GitHub_Release_Notificator.postman_collection.json`
 
 Recommended variable setup:
 
@@ -186,7 +192,7 @@ Recommended variable setup:
 3. The same confirmation email also contains an unsubscribe token.
 4. Subscription remains `Pending` until the user opens the confirmation link.
 5. User confirms by opening the link in a browser.
-6. Confirmation page is shown in browser (instead of raw JSON).
+6. Confirmation page is shown in browser.
 7. Only confirmed subscriptions can be unsubscribed.
 8. Unsubscribe is done by providing the token in the app form or API call.
 
@@ -206,9 +212,9 @@ npm test
 
 ## Project Scripts
 
-- `npm run dev` — start server with nodemon
-- `npm start` — start server in normal mode
-- `npm run lint` — run ESLint
-- `npm run lint:fix` — auto-fix lint issues
-- `npm run test:unit` — run tests once
-- `npm test` — run tests with coverage
+- `npm run dev` - start server with nodemon
+- `npm start` - start server in normal mode
+- `npm run lint` - run ESLint
+- `npm run lint:fix` - auto-fix lint issues
+- `npm run test:unit` - run tests once
+- `npm test` - run tests with coverage
