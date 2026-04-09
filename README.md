@@ -1,8 +1,6 @@
-## Demo 
+## Demo
 
 https://github.com/user-attachments/assets/3291d081-16f4-450a-842d-8a4633ec1944
-
-
 
 # GitHub Release Notificator
 
@@ -17,6 +15,7 @@ A Node.js + Express service that lets users subscribe to GitHub repository relea
 - PostgreSQL persistence
 - Redis cache for GitHub API responses (TTL 10 minutes)
 - Email delivery via Resend API (recommended) with SMTP fallback support
+- Prometheus-compatible metrics endpoint: `/metrics` (basic service metrics)
 - Unit and integration tests with Jest
 
 ## Hosted App (Render)
@@ -157,6 +156,7 @@ Server should be available at:
 
 - `http://localhost:3000`
 - Health check: `http://localhost:3000/health`
+- Metrics: `http://localhost:3000/metrics`
 
 ## 5. Database Migrations
 
