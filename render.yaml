@@ -8,6 +8,9 @@ services:
   - type: redis
     name: notificator-redis
     plan: free
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: allow all
 
   - type: web
     name: notificator
