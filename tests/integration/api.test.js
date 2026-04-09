@@ -117,7 +117,7 @@ describe('GET /api/confirm/:token', () => {
 
 describe('GET /api/unsubscribe/:token', () => {
     it('should return 200 on successful unsubscribe', async () => {
-        subscriptionRepo.findByUnsubscribeToken.mockResolvedValue({ id: 1 });
+        subscriptionRepo.findByUnsubscribeToken.mockResolvedValue({ id: 1, confirmed: true });
         subscriptionRepo.remove.mockResolvedValue();
 
         const res = await request(app).get('/api/unsubscribe/valid-token');
@@ -132,6 +132,15 @@ describe('GET /api/unsubscribe/:token', () => {
         const res = await request(app).get('/api/unsubscribe/unknown-token');
 
         expect(res.status).toBe(404);
+    });
+
+    it('should return 409 when subscription is not confirmed yet', async () => {
+        subscriptionRepo.findByUnsubscribeToken.mockResolvedValue({ id: 2, confirmed: false });
+
+        const res = await request(app).get('/api/unsubscribe/pending-token');
+
+        expect(res.status).toBe(409);
+        expect(res.body.error).toContain('not confirmed');
     });
 });
 

@@ -146,13 +146,23 @@ describe('subscriptionService.unsubscribe', () => {
     });
 
     it('should remove subscription successfully', async () => {
-        subscriptionRepo.findByUnsubscribeToken.mockResolvedValue({ id: 5 });
+        subscriptionRepo.findByUnsubscribeToken.mockResolvedValue({ id: 5, confirmed: true });
         subscriptionRepo.remove.mockResolvedValue();
 
         const result = await subscriptionService.unsubscribe('valid-token');
 
         expect(result.message).toContain('Unsubscribed');
         expect(subscriptionRepo.remove).toHaveBeenCalledWith(5);
+    });
+
+    it('should throw 409 when subscription is not confirmed', async () => {
+        subscriptionRepo.findByUnsubscribeToken.mockResolvedValue({ id: 5, confirmed: false });
+
+        await expect(subscriptionService.unsubscribe('valid-token'))
+            .rejects
+            .toMatchObject({ statusCode: 409 });
+
+        expect(subscriptionRepo.remove).not.toHaveBeenCalled();
     });
 });
 

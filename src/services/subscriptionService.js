@@ -84,6 +84,10 @@ async function unsubscribe(token) {
     const subscription = await subscriptionRepo.findByUnsubscribeToken(token);
     if (!subscription) throw createError('Token not found', 404);
 
+    if (!subscription.confirmed) {
+        throw createError('Subscription is not confirmed yet', 409);
+    }
+
     await subscriptionRepo.remove(subscription.id);
     return { message: 'Unsubscribed successfully' };
 }
