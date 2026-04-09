@@ -1,4 +1,5 @@
 const config = require('@/config');
+const { API_KEY_MESSAGES } = require('@/constants/messages');
 
 function apiKeyAuth(req, res, next) {
 
@@ -9,11 +10,11 @@ function apiKeyAuth(req, res, next) {
     const provided = req.headers['x-api-key'];
 
     if (!provided) {
-        return res.status(401).json({ error: 'Missing X-API-Key header' });
+        return res.status(401).json({ error: API_KEY_MESSAGES.MISSING_HEADER });
     }
 
     if (provided !== config.apiKey) {
-        return res.status(403).json({ error: 'Invalid API key' });
+        return res.status(403).json({ error: API_KEY_MESSAGES.INVALID_KEY });
     }
 
     return next();

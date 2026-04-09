@@ -5,6 +5,7 @@ const emailService = require('./emailService');
 const config = require('@/config');
 const { validateEmail, validateRepo, validateToken } = require('@/validators/subscription');
 const logger = require('@/utils/logger');
+const { SUBSCRIPTION_MESSAGES } = require('@/constants/messages');
 
 function createError(message, statusCode) {
     const err = new Error(message);
@@ -25,10 +26,10 @@ async function subscribe(email, repo) {
     const normalizedRepo = repo.trim();
 
     const existing = await subscriptionRepo.findByEmailAndRepo(normalizedEmail, normalizedRepo);
-    if (existing) throw createError('Email already subscribed to this repository', 409);
+    if (existing) throw createError(SUBSCRIPTION_MESSAGES.ALREADY_SUBSCRIBED, 409);
 
     const repoExists = await githubService.checkRepoExists(normalizedRepo);
-    if (!repoExists) throw createError('Repository not found on GitHub', 404);
+    if (!repoExists) throw createError(SUBSCRIPTION_MESSAGES.REPO_NOT_FOUND, 404);
 
     const latestRelease = await githubService.getLatestRelease(normalizedRepo);
     const lastSeenTag = latestRelease ? latestRelease.tag : null;
@@ -55,41 +56,41 @@ async function subscribe(email, repo) {
 
         const emailConfigured = Boolean(config.resend.apiKey || (config.smtp.user && config.smtp.pass));
         const message = emailConfigured
-            ? 'Failed to send confirmation email. Please try again later.'
-            : 'Email service is not configured on server. Please configure SMTP or Resend settings.';
+            ? SUBSCRIPTION_MESSAGES.EMAIL_SEND_FAILED
+            : SUBSCRIPTION_MESSAGES.EMAIL_NOT_CONFIGURED;
 
         throw createError(message, 503);
     }
 
-    return { message: 'Subscription successful. Confirmation email sent.' };
+    return { message: SUBSCRIPTION_MESSAGES.SUBSCRIBE_SUCCESS };
 }
 
 async function confirmSubscription(token) {
     assertValid(validateToken(token));
 
     const subscription = await subscriptionRepo.findByConfirmToken(token);
-    if (!subscription) throw createError('Token not found', 404);
+    if (!subscription) throw createError(SUBSCRIPTION_MESSAGES.TOKEN_NOT_FOUND, 404);
 
     if (subscription.confirmed) {
-        return { message: 'Subscription already confirmed' };
+        return { message: SUBSCRIPTION_MESSAGES.ALREADY_CONFIRMED };
     }
 
     await subscriptionRepo.confirm(subscription.id);
-    return { message: 'Subscription confirmed successfully' };
+    return { message: SUBSCRIPTION_MESSAGES.CONFIRM_SUCCESS };
 }
 
 async function unsubscribe(token) {
     assertValid(validateToken(token));
 
     const subscription = await subscriptionRepo.findByUnsubscribeToken(token);
-    if (!subscription) throw createError('Token not found', 404);
+    if (!subscription) throw createError(SUBSCRIPTION_MESSAGES.TOKEN_NOT_FOUND, 404);
 
     if (!subscription.confirmed) {
-        throw createError('Subscription is not confirmed yet', 409);
+        throw createError(SUBSCRIPTION_MESSAGES.NOT_CONFIRMED, 409);
     }
 
     await subscriptionRepo.remove(subscription.id);
-    return { message: 'Unsubscribed successfully' };
+    return { message: SUBSCRIPTION_MESSAGES.UNSUBSCRIBE_SUCCESS };
 }
 
 async function getSubscriptions(email) {

@@ -2,6 +2,7 @@ const axios = require('axios');
 const config = require('@/config');
 const logger = require('@/utils/logger');
 const redisCache = require('@/cache/redisCache');
+const { GITHUB_MESSAGES } = require('@/constants/messages');
 
 let client = null;
 
@@ -79,7 +80,7 @@ async function checkRepoExists(repo) {
         }
         if (err.response?.status === 429) {
             logger.error('GitHub rate limit exceeded after retries');
-            const error = new Error('GitHub API rate limit exceeded. Please try again later.');
+            const error = new Error(GITHUB_MESSAGES.RATE_LIMIT_EXCEEDED);
             error.statusCode = 503;
             error.expose = true;
             throw error;
